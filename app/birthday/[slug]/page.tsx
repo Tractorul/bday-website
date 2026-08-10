@@ -8,7 +8,9 @@ type PageProps = {
   }>;
 };
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({
+  params,
+}: PageProps) {
   const { slug } = await params;
 
   const supabase = await createClient();
@@ -21,8 +23,8 @@ export default async function Page({ params }: PageProps) {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
-        <div className="text-center">
+      <main className="flex min-h-screen items-center justify-center bg-black p-6 text-white">
+        <div className="max-w-xl text-center">
           <h1 className="text-2xl font-bold">
             Database error
           </h1>
@@ -40,6 +42,8 @@ export default async function Page({ params }: PageProps) {
   }
 
   return (
-    <BirthdayExperience birthday={data} />
+    <BirthdayExperience
+      birthday={data}
+    />
   );
 }

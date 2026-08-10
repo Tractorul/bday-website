@@ -14,7 +14,10 @@ export default function NewBirthdayPage() {
   const [birthdayTime, setBirthdayTime] = useState("00:00");
   const [timezone, setTimezone] = useState("Europe/Bucharest");
   const [language, setLanguage] = useState("ro");
+
+  // IMPORTANT: theme state lives INSIDE the component
   const [theme, setTheme] = useState("default");
+
   const [enableConfetti, setEnableConfetti] = useState(true);
   const [isPrimary, setIsPrimary] = useState(false);
 
@@ -32,10 +35,12 @@ export default function NewBirthdayPage() {
   }
 
   function handleNameChange(value: string) {
+    const generated = generateSlug(value);
+
     setName(value);
 
     if (!slug || slug === generateSlug(name)) {
-      setSlug(generateSlug(value));
+      setSlug(generated);
     }
 
     if (!title) {
@@ -96,13 +101,12 @@ export default function NewBirthdayPage() {
         }),
       });
 
-      const contentType = response.headers.get("content-type") || "";
+      const contentType =
+        response.headers.get("content-type") || "";
 
       if (!contentType.includes("application/json")) {
-        const text = await response.text();
-
         throw new Error(
-          `API-ul a returnat ceva care nu este JSON. Status: ${response.status}`
+          `API-ul a returnat un răspuns invalid. Status: ${response.status}`
         );
       }
 
@@ -110,7 +114,8 @@ export default function NewBirthdayPage() {
 
       if (!response.ok) {
         throw new Error(
-          data?.error || "Nu am putut crea ziua de naștere."
+          data?.error ||
+            "Nu am putut crea ziua de naștere."
         );
       }
 
@@ -122,22 +127,23 @@ export default function NewBirthdayPage() {
           ? err.message
           : "A apărut o eroare."
       );
+
       setLoading(false);
     }
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto max-w-3xl px-6 py-10">
-        <div className="mb-8">
-          <button
-            type="button"
-            onClick={() => router.push("/admin/dashboard")}
-            className="mb-6 text-sm text-zinc-400 transition hover:text-white"
-          >
-            ← Înapoi la dashboard
-          </button>
+    <main className="min-h-screen bg-black px-5 py-10 text-white">
+      <div className="mx-auto max-w-3xl">
+        <button
+          type="button"
+          onClick={() => router.push("/admin/dashboard")}
+          className="mb-6 text-sm text-zinc-400 transition hover:text-white"
+        >
+          ← Înapoi la dashboard
+        </button>
 
+        <div className="mb-8">
           <h1 className="text-3xl font-bold">
             Creează o zi de naștere
           </h1>
@@ -169,6 +175,7 @@ export default function NewBirthdayPage() {
                     handleNameChange(e.target.value)
                   }
                   placeholder="Sophi"
+                  required
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none transition focus:border-pink-500"
                 />
               </div>
@@ -186,6 +193,7 @@ export default function NewBirthdayPage() {
                     )
                   }
                   placeholder="sophi"
+                  required
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none transition focus:border-pink-500"
                 />
 
@@ -247,6 +255,7 @@ export default function NewBirthdayPage() {
                   onChange={(e) =>
                     setBirthdayDate(e.target.value)
                   }
+                  required
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-pink-500"
                 />
               </div>
@@ -368,11 +377,15 @@ export default function NewBirthdayPage() {
             </h2>
 
             <div className="mt-5">
-              <label className="mb-2 block text-sm text-zinc-300">
+              <label
+                htmlFor="theme"
+                className="mb-2 block text-sm text-zinc-300"
+              >
                 Temă
               </label>
 
               <select
+                id="theme"
                 value={theme}
                 onChange={(e) =>
                   setTheme(e.target.value)
@@ -383,22 +396,53 @@ export default function NewBirthdayPage() {
                   Default
                 </option>
 
-                <option value="dreamy">
-                  Dreamy 💗
+                <option value="sophi">
+                  Sophi 💗
                 </option>
 
-                <option value="romantic">
-                  Romantic 🌸
+                <option value="colorful">
+                  Colorful 🌈
                 </option>
 
-                <option value="pink">
-                  Pink ✨
+                <option value="neon">
+                  Neon ⚡
+                </option>
+
+                <option value="galaxy">
+                  Galaxy 🌌
                 </option>
 
                 <option value="minimal">
-                  Minimal
+                  Minimal ✨
+                </option>
+
+                <option value="midnight">
+                  Midnight 🌙
+                </option>
+
+                <option value="sakura">
+                  Sakura 🌸
+                </option>
+
+                <option value="ocean">
+                  Ocean 🌊
+                </option>
+
+                <option value="sunset">
+                  Sunset 🌅
+                </option>
+
+                <option value="elegant">
+                  Elegant 🕊️
                 </option>
               </select>
+
+              {theme === "sophi" && (
+                <p className="mt-3 text-sm text-pink-300">
+                  O temă specială, clean și
+                  romantică, făcută pentru Sophi. 💗
+                </p>
+              )}
             </div>
 
             <label className="mt-5 flex cursor-pointer items-center gap-3">
@@ -443,10 +487,8 @@ export default function NewBirthdayPage() {
                 </p>
 
                 <p className="mt-1 text-xs text-zinc-500">
-                  Dacă este activată, această
-                  aniversare va apărea pe
-                  homepage cu countdown-ul
-                  principal.
+                  Această aniversare va fi
+                  folosită pentru homepage.
                 </p>
               </div>
             </label>
