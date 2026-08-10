@@ -1,9 +1,19 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import {
+  createAdminClient,
+  requireAdmin,
+} from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import BirthdayList from "@/components/admin/BirthdayList";
 
 export default async function AdminDashboard() {
-  const supabase = await createClient();
+  const auth = await requireAdmin();
+
+  if (!auth.authorized) {
+    redirect("/admin/login");
+  }
+
+  const supabase = await createAdminClient();
 
   const { data: birthdays, error } = await supabase
     .from("birthday_configs")
@@ -11,11 +21,11 @@ export default async function AdminDashboard() {
     .order("name");
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      <div className="mx-auto max-w-6xl p-6">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+    <main className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-zinc-600">
+            <p className="text-sm font-medium uppercase tracking-widest text-zinc-500">
               Admin
             </p>
 
@@ -37,7 +47,6 @@ export default async function AdminDashboard() {
               Open site
             </Link>
 
-            {/* Updated path to point to the new creation page */}
             <Link
               href="/admin/configure/new"
               className="rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-zinc-200"
@@ -55,9 +64,7 @@ export default async function AdminDashboard() {
           </div>
         ) : (
           <div className="mt-10">
-            <BirthdayList
-              birthdays={birthdays ?? []}
-            />
+            <BirthdayList birthdays={birthdays ?? []} />
           </div>
         )}
       </div>
