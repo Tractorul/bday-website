@@ -1,69 +1,204 @@
-import Image from "next/image";
+import type { Birthday } from "@/types/birthday";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import Countdown from "@/components/birthday/Countdown";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+
+export default async function Home() {
+  const supabase = await createClient();
+
+  const { data: birthdays, error } = await supabase
+    .from("birthday_configs")
+    .select(
+      `
+        id,
+        slug,
+        name,
+        birthday_date,
+        birthday_time,
+        timezone,
+        title,
+        message,
+        is_primary
+      `
+    )
+    .order("name");
+
+  if (error) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
+        <div className="max-w-md text-center">
+          <div className="text-6xl">⚠️</div>
+
+          <h1 className="mt-6 text-2xl font-bold">
+            Something went wrong
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="mt-3 text-sm text-zinc-400">
+            {error.message}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </main>
+    );
+  }
+
+  const birthdayList = (birthdays ?? []) as Birthday[];
+
+  /*
+   * No birthdays
+   */
+  if (birthdayList.length === 0) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
+        <div className="text-center">
+          <div className="text-7xl">🎂</div>
+
+          <h1 className="mt-6 text-3xl font-bold">
+            No birthdays yet
+          </h1>
+
+          <p className="mt-3 text-zinc-400">
+            Create a birthday from the admin panel.
+          </p>
+
+          <Link
+            href="/admin/dashboard"
+            className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Open Admin
+          </Link>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  /*
+   * One birthday OR a primary birthday exists
+   */
+  const primaryBirthday =
+    birthdayList.find((birthday) => birthday.is_primary) ??
+    (birthdayList.length === 1 ? birthdayList[0] : null);
+
+  /*
+   * Show the selected birthday
+   */
+  if (primaryBirthday) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
+        <div className="w-full max-w-3xl text-center">
+          <div className="text-7xl">🎂</div>
+
+          <p className="mt-6 text-sm uppercase tracking-[0.35em] text-zinc-500">
+            Birthday Countdown
+          </p>
+
+          <h1 className="mt-4 text-5xl font-bold tracking-tight sm:text-6xl">
+            {primaryBirthday.name}
+          </h1>
+
+          {primaryBirthday.title && (
+            <p className="mt-4 text-xl text-zinc-400">
+              {primaryBirthday.title}
+            </p>
+          )}
+
+          <Countdown
+            date={primaryBirthday.birthday_date}
+            time={primaryBirthday.birthday_time}
+            timezone={primaryBirthday.timezone}
+          />
+
+          <div className="mt-6 text-sm text-zinc-600">
+            {primaryBirthday.birthday_date} ·{" "}
+            {primaryBirthday.birthday_time} ·{" "}
+            {primaryBirthday.timezone}
+          </div>
+
+          {primaryBirthday.message && (
+            <p className="mx-auto mt-8 max-w-xl text-zinc-400">
+              {primaryBirthday.message}
+            </p>
+          )}
+
+          <Link
+            href={`/birthday/${primaryBirthday.slug}`}
+            className="mt-8 inline-block text-sm text-zinc-500 transition hover:text-white"
+          >
+            View birthday page →
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  /*
+   * Multiple birthdays and none is primary.
+   * Show all birthdays.
+   */
+  return (
+    <main className="min-h-screen bg-zinc-950 p-6 text-white">
+      <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center">
+        <div className="mb-10 text-center">
+          <div className="text-6xl">🎂</div>
+
+          <h1 className="mt-5 text-4xl font-bold">
+            Birthday Countdown
+          </h1>
+
+          <p className="mt-3 text-zinc-400">
+            Choose a birthday to view its countdown.
+          </p>
+        </div>
+
+        <div className="grid gap-5">
+          {birthdayList.map((birthday) => (
+            <div
+              key={birthday.id}
+              className="rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/[0.07]"
+            >
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">🎂</span>
+
+                    <h2 className="text-2xl font-bold">
+                      {birthday.name}
+                    </h2>
+                  </div>
+
+                  {birthday.title && (
+                    <p className="mt-2 text-zinc-400">
+                      {birthday.title}
+                    </p>
+                  )}
+                </div>
+
+                <Link
+                  href={`/birthday/${birthday.slug}`}
+                  className="rounded-xl bg-white px-5 py-3 text-center text-sm font-semibold text-black transition hover:bg-zinc-200"
+                >
+                  View birthday →
+                </Link>
+              </div>
+
+              <Countdown
+                date={birthday.birthday_date}
+                time={birthday.birthday_time}
+                timezone={birthday.timezone}
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 text-center">
+          <Link
+            href="/admin/dashboard"
+            className="text-sm text-zinc-600 transition hover:text-zinc-300"
+          >
+            Admin →
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
