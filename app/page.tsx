@@ -1,8 +1,7 @@
 import type { Birthday } from "@/types/birthday";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import Countdown from "@/components/birthday/Countdown";
-
+import HomeBirthday from "@/components/birthday/HomeBirthday";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -19,16 +18,21 @@ export default async function Home() {
         timezone,
         title,
         message,
-        is_primary
+        theme,
+        language,
+        enable_confetti,
+        enable_music,
+        is_primary,
+        show_message_on_birthday_only
       `
     )
     .order("name");
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
-        <div className="max-w-md text-center">
-          <div className="text-6xl">⚠️</div>
+      <main className="flex min-h-screen items-center justify-center bg-black p-6 text-white">
+        <div className="max-w-xl text-center">
+          <div className="text-4xl">⚠️</div>
 
           <h1 className="mt-6 text-2xl font-bold">
             Something went wrong
@@ -49,9 +53,9 @@ export default async function Home() {
    */
   if (birthdayList.length === 0) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-black p-6 text-white">
         <div className="text-center">
-          <div className="text-7xl">🎂</div>
+          <div className="text-5xl">🎂</div>
 
           <h1 className="mt-6 text-3xl font-bold">
             No birthdays yet
@@ -84,10 +88,8 @@ export default async function Home() {
    */
   if (primaryBirthday) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
-        <div className="w-full max-w-3xl text-center">
-          <div className="text-7xl">🎂</div>
-
+      <main className="flex min-h-screen items-center justify-center bg-black p-6 text-white">
+        <div className="w-full max-w-4xl text-center">
           <p className="mt-6 text-sm uppercase tracking-[0.35em] text-zinc-500">
             Birthday Countdown
           </p>
@@ -102,23 +104,13 @@ export default async function Home() {
             </p>
           )}
 
-          <Countdown
-            date={primaryBirthday.birthday_date}
-            time={primaryBirthday.birthday_time}
-            timezone={primaryBirthday.timezone}
-          />
+          <HomeBirthday birthday={primaryBirthday} />
 
           <div className="mt-6 text-sm text-zinc-600">
             {primaryBirthday.birthday_date} ·{" "}
             {primaryBirthday.birthday_time} ·{" "}
             {primaryBirthday.timezone}
           </div>
-
-          {primaryBirthday.message && (
-            <p className="mx-auto mt-8 max-w-xl text-zinc-400">
-              {primaryBirthday.message}
-            </p>
-          )}
 
           <Link
             href={`/birthday/${primaryBirthday.slug}`}
@@ -136,35 +128,27 @@ export default async function Home() {
    * Show all birthdays.
    */
   return (
-    <main className="min-h-screen bg-zinc-950 p-6 text-white">
-      <div className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center">
-        <div className="mb-10 text-center">
-          <div className="text-6xl">🎂</div>
+    <main className="min-h-screen bg-black p-6 text-white">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="mt-5 text-4xl font-bold">
+          Birthday Countdown
+        </h1>
 
-          <h1 className="mt-5 text-4xl font-bold">
-            Birthday Countdown
-          </h1>
+        <p className="mt-3 text-zinc-400">
+          Choose a birthday to view its countdown.
+        </p>
 
-          <p className="mt-3 text-zinc-400">
-            Choose a birthday to view its countdown.
-          </p>
-        </div>
-
-        <div className="grid gap-5">
+        <div className="mt-8 grid gap-4">
           {birthdayList.map((birthday) => (
             <div
               key={birthday.id}
-              className="rounded-3xl border border-white/10 bg-white/5 p-6 transition hover:border-white/20 hover:bg-white/[0.07]"
+              className="rounded-2xl border border-white/10 bg-white/5 p-6"
             >
-              <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">🎂</span>
-
-                    <h2 className="text-2xl font-bold">
-                      {birthday.name}
-                    </h2>
-                  </div>
+                  <h2 className="text-2xl font-bold">
+                    {birthday.name}
+                  </h2>
 
                   {birthday.title && (
                     <p className="mt-2 text-zinc-400">
@@ -181,22 +165,9 @@ export default async function Home() {
                 </Link>
               </div>
 
-              <Countdown
-                date={birthday.birthday_date}
-                time={birthday.birthday_time}
-                timezone={birthday.timezone}
-              />
+              <HomeBirthday birthday={birthday} />
             </div>
           ))}
-        </div>
-
-        <div className="mt-8 text-center">
-          <Link
-            href="/admin/dashboard"
-            className="text-sm text-zinc-600 transition hover:text-zinc-300"
-          >
-            Admin →
-          </Link>
         </div>
       </div>
     </main>
