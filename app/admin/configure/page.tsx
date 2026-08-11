@@ -1,78 +1,165 @@
 "use client";
 
 import type { Birthday } from "@/types/birthday";
-import { FormEvent, Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  FormEvent,
+  Suspense,
+  useEffect,
+  useState,
+} from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 function ConfigurePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const slug = searchParams.get("slug");
+  const slugParam = searchParams.get("slug");
+  const slug = slugParam ?? "";
 
-  const [birthday, setBirthday] = useState<Birthday | null>(null);
+  const [birthday, setBirthday] =
+    useState<Birthday | null>(null);
 
-  const [name, setName] = useState("");
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [birthdayDate, setBirthdayDate] = useState("");
-  const [birthdayTime, setBirthdayTime] = useState("00:00");
-  const [timezone, setTimezone] = useState("Europe/Bucharest");
-  const [language, setLanguage] = useState<"ro" | "en">("ro");
-  const [theme, setTheme] = useState("default");
-  const [enableConfetti, setEnableConfetti] = useState(true);
+  const [birthdays, setBirthdays] =
+    useState<Birthday[]>([]);
 
-  const [loading, setLoading] = useState(Boolean(slug));
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+  const [name, setName] =
+    useState("");
+
+  const [title, setTitle] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
+
+  const [birthdayDate, setBirthdayDate] =
+    useState("");
+
+  const [birthdayTime, setBirthdayTime] =
+    useState("00:00");
+
+  const [timezone, setTimezone] =
+    useState("Europe/Bucharest");
+
+  const [language, setLanguage] =
+    useState<"ro" | "en">("ro");
+
+  const [theme, setTheme] =
+    useState("default");
+
+  const [enableConfetti, setEnableConfetti] =
+    useState(true);
+
+  const [
+    showMessageOnBirthdayOnly,
+    setShowMessageOnBirthdayOnly,
+  ] = useState(false);
 
   useEffect(() => {
-    if (!slug) {
-      setLoading(false);
-      return;
-    }
-
-    async function loadBirthday() {
+    async function load() {
       setLoading(true);
       setError("");
 
       try {
-        const response = await fetch("/api/admin/birthdays", {
-          cache: "no-store",
-        });
+        if (!slug) {
+          const response = await fetch(
+            "/api/admin/birthdays"
+          );
 
-        const data = await response.json();
+          if (!response.ok) {
+            const data =
+              await response
+                .json()
+                .catch(() => null);
 
+            throw new Error(
+              data?.error ||
+                "Nu am putut încărca zilele de naștere."
+            );
+          }
+
+          const data =
+            await response.json();
+
+          const list = Array.isArray(data)
+            ? data
+            : data.birthdays ?? [];
+
+          setBirthdays(list);
+          return;
+        }
+
+       const response = await fetch(
+  `/api/admin/birthdays/${encodeURIComponent(
+    slug
+  )}`,
+  {
+    cache: "no-store",
+  }
+);
         if (!response.ok) {
+          const data =
+            await response
+              .json()
+              .catch(() => null);
+
           throw new Error(
-            data?.error || "Nu am putut încărca zilele de naștere."
+            data?.error ||
+              "Nu am putut încărca ziua de naștere."
           );
         }
 
-        const list: Birthday[] = Array.isArray(data)
-          ? data
-          : data.birthdays ?? [];
+        const data =
+          await response.json();
 
-        const found = list.find((item) => item.slug === slug);
+        setBirthday(data);
 
-        if (!found) {
-          throw new Error(
-            `Nu am găsit ziua de naștere "${slug}".`
-          );
-        }
+        setName(data.name ?? "");
+        setTitle(data.title ?? "");
+        setMessage(data.message ?? "");
 
-        setBirthday(found);
+        setBirthdayDate(
+          data.birthday_date ?? ""
+        );
 
-        setName(found.name ?? "");
-        setTitle(found.title ?? "");
-        setMessage(found.message ?? "");
-        setBirthdayDate(found.birthday_date ?? "");
-        setBirthdayTime(found.birthday_time ?? "00:00");
-        setTimezone(found.timezone ?? "Europe/Bucharest");
-        setLanguage(found.language === "en" ? "en" : "ro");
-        setTheme(found.theme ?? "default");
-        setEnableConfetti(found.enable_confetti ?? true);
+        setBirthdayTime(
+          data.birthday_time ?? "00:00"
+        );
+
+        setTimezone(
+          data.timezone ??
+            "Europe/Bucharest"
+        );
+
+        setLanguage(
+          data.language === "en"
+            ? "en"
+            : "ro"
+        );
+
+        setTheme(
+          data.theme ?? "default"
+        );
+
+        setEnableConfetti(
+          data.enable_confetti ?? true
+        );
+
+        setShowMessageOnBirthdayOnly(
+          data.show_message_on_birthday_only ??
+            false
+        );
       } catch (err) {
         setError(
           err instanceof Error
@@ -84,129 +171,69 @@ function ConfigurePageContent() {
       }
     }
 
-    loadBirthday();
+    load();
   }, [slug]);
-
-  function createSlug(value: string) {
-    return value
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-  }
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
 
+    if (!slug) {
+      setError(
+        "Selectează mai întâi o zi de naștere."
+      );
+      return;
+    }
+
     setSaving(true);
     setError("");
-    setSuccess("");
-
-    const generatedSlug = slug || createSlug(name);
-
-    if (!name.trim()) {
-      setError("Introdu numele persoanei.");
-      setSaving(false);
-      return;
-    }
-
-    if (!birthdayDate) {
-      setError("Alege data zilei de naștere.");
-      setSaving(false);
-      return;
-    }
-
-    if (!generatedSlug) {
-      setError("Numele nu poate fi folosit pentru generarea linkului.");
-      setSaving(false);
-      return;
-    }
 
     try {
-      
-      if (!slug) {
-        const response = await fetch("/api/admin/birthdays", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: name.trim(),
-            slug: generatedSlug,
-            title:
-              title.trim() ||
-              (language === "ro"
-                ? `La mulți ani, ${name.trim()}!`
-                : `Happy Birthday, ${name.trim()}!`),
-            message: message.trim(),
-            birthday_date: birthdayDate,
-            birthday_time: birthdayTime || "00:00",
-            timezone,
-            language,
-            theme,
-            enable_confetti: enableConfetti,
-          }),
-        });
-
-        const data = await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(
-            data?.error ||
-              "Nu am putut crea ziua de naștere."
-          );
-        }
-
-        setSuccess("Ziua de naștere a fost creată! 🎂");
-
-        setTimeout(() => {
-          router.push(
-            `/admin/configure?slug=${encodeURIComponent(
-              generatedSlug
-            )}`
-          );
-        }, 500);
-
-        return;
-      }
-
-      
       const response = await fetch(
-        `/api/admin/birthdays?slug=${encodeURIComponent(slug)}`,
+        `/api/admin/birthdays/${encodeURIComponent(
+          slug
+        )}`,
         {
           method: "PUT",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
           body: JSON.stringify({
-            slug,
             name: name.trim(),
             title: title.trim(),
             message: message.trim(),
             birthday_date: birthdayDate,
-            birthday_time: birthdayTime || "00:00",
+            birthday_time: birthdayTime,
             timezone,
             language,
             theme,
-            enable_confetti: enableConfetti,
+            enable_confetti:
+              enableConfetti,
+            show_message_on_birthday_only:
+              showMessageOnBirthdayOnly,
           }),
         }
       );
 
-      const data = await response.json().catch(() => null);
+      const data =
+        await response
+          .json()
+          .catch(() => null);
 
       if (!response.ok) {
         throw new Error(
           data?.error ||
-            "API-ul nu poate actualiza încă această zi de naștere."
+            "Nu am putut salva modificările."
         );
       }
 
       setBirthday(data);
-      setSuccess("Modificările au fost salvate! 💗");
+
+      alert(
+        "Modificările au fost salvate! 💗"
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -220,262 +247,337 @@ function ConfigurePageContent() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-950 px-6 text-white">
-        <div className="text-center">
-          <div className="text-4xl">🎂</div>
-          <p className="mt-4 text-zinc-400">
-            Se încarcă...
-          </p>
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
+        <p className="text-zinc-400">
+          Se încarcă...
+        </p>
+      </main>
+    );
+  }
+
+  if (!slug) {
+    return (
+      <main className="min-h-screen bg-zinc-950 p-6 text-white">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-8">
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  "/admin/dashboard"
+                )
+              }
+              className="mb-5 rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/10"
+            >
+              ← Înapoi
+            </button>
+
+            <p className="text-sm text-zinc-500">
+              Admin
+            </p>
+
+            <h1 className="mt-1 text-3xl font-bold">
+              Configurează un birthday
+            </h1>
+
+            <p className="mt-2 text-zinc-400">
+              Alege ziua de naștere pe care
+              vrei să o modifici.
+            </p>
+          </div>
+
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+
+          {birthdays.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+              <div className="text-4xl">
+                🎂
+              </div>
+
+              <h2 className="mt-4 text-xl font-semibold">
+                Nu există birthdays
+              </h2>
+
+              <p className="mt-2 text-zinc-400">
+                Creează mai întâi o zi de
+                naștere din dashboard.
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  router.push(
+                    "/admin/configure/new"
+                  )
+                }
+                className="mt-6 rounded-xl bg-pink-500 px-5 py-3 font-semibold transition hover:bg-pink-400"
+              >
+                Creează primul birthday
+              </button>
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {birthdays.map((item) => (
+                <button
+                  key={item.slug}
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/admin/configure?slug=${encodeURIComponent(
+                        item.slug
+                      )}`
+                    )
+                  }
+                  className="group flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-5 text-left transition hover:border-pink-400/40 hover:bg-pink-500/5"
+                >
+                  <div>
+                    <h2 className="text-lg font-semibold">
+                      {item.name ||
+                        item.title}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-zinc-500">
+                      /birthday/
+                      {item.slug}
+                    </p>
+
+                    {item.birthday_date && (
+                      <p className="mt-2 text-sm text-zinc-400">
+                        {item.birthday_date}
+                      </p>
+                    )}
+                  </div>
+
+                  <span className="text-zinc-500 transition group-hover:translate-x-1 group-hover:text-pink-400">
+                    →
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     );
   }
 
-  const isEditing = Boolean(slug);
-
-  return (
-    <main className="min-h-screen bg-zinc-950 px-4 py-8 text-white sm:px-6">
-      <div className="mx-auto w-full max-w-3xl">
-        {/* Header */}
-        <header className="mb-8">
-          <button
-            type="button"
-            onClick={() => router.push("/admin/dashboard")}
-            className="mb-6 rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/10"
-          >
-            ← Dashboard
-          </button>
-
-          <p className="text-sm font-medium text-pink-400">
-            Birthday Website
-          </p>
-
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            {isEditing
-              ? `Editează ${name || "birthday-ul"}`
-              : "Creează un birthday"}
+  if (error && !birthday) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-zinc-950 p-6 text-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">
+            Eroare
           </h1>
 
-          <p className="mt-3 text-zinc-400">
-            {isEditing
-              ? "Modifică setările acestei pagini."
-              : "Configurează o nouă pagină de zi de naștere."}
+          <p className="mt-3 text-red-400">
+            {error}
           </p>
 
-          {isEditing && slug && (
-            <p className="mt-2 text-sm text-zinc-600">
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                "/admin/dashboard"
+              )
+            }
+            className="mt-6 rounded-xl bg-white px-5 py-3 font-semibold text-black"
+          >
+            Înapoi
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="min-h-screen bg-zinc-950 p-6 text-white">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-zinc-500">
+              Configurare
+            </p>
+
+            <h1 className="mt-1 text-3xl font-bold">
+              {name || "Birthday"}
+            </h1>
+
+            <p className="mt-1 text-sm text-zinc-500">
               /birthday/{slug}
             </p>
-          )}
-        </header>
-
-        {/* Errors */}
-        {error && (
-          <div className="mb-6 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
-            <div className="font-semibold">
-              Ceva nu a mers 😭
-            </div>
-            <p className="mt-1">{error}</p>
           </div>
-        )}
 
-        {/* Success */}
-        {success && (
-          <div className="mb-6 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-sm text-green-300">
-            {success}
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={() =>
+              router.push(
+                "/admin/dashboard"
+              )
+            }
+            className="rounded-xl border border-white/10 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/10"
+          >
+            Înapoi
+          </button>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Birthday */}
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold">
-                Birthday 🎂
-              </h2>
-              <p className="mt-1 text-sm text-zinc-500">
-                Informațiile principale ale zilei de naștere.
-              </p>
-            </div>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6"
+        >
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-xl font-semibold">
+              Birthday
+            </h2>
 
-            <div className="space-y-5">
-              {/* Name */}
+            <div className="mt-5 grid gap-5">
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">
+                <label className="mb-2 block text-sm text-zinc-400">
                   Nume
                 </label>
 
                 <input
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) =>
+                    setName(e.target.value)
+                  }
                   required
-                  disabled={isEditing}
+                  className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-pink-400"
                   placeholder="Sophi"
-                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-pink-400 disabled:cursor-not-allowed disabled:opacity-60"
                 />
-
-                {!isEditing && (
-                  <p className="mt-2 text-xs text-zinc-600">
-                    Numele va fi folosit pentru generarea linkului.
-                  </p>
-                )}
               </div>
 
-              {/* Title */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">
+                <label className="mb-2 block text-sm text-zinc-400">
                   Titlu
                 </label>
 
                 <input
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={
-                    language === "ro"
-                      ? "La mulți ani, Sophi! 💗"
-                      : "Happy Birthday, Sophi! 💗"
+                  onChange={(e) =>
+                    setTitle(e.target.value)
                   }
-                  className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-pink-400"
+                  className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-pink-400"
+                  placeholder="La mulți ani, Sophi 💗"
                 />
               </div>
 
-              {/* Message */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">
+                <label className="mb-2 block text-sm text-zinc-400">
                   Mesaj
                 </label>
 
                 <textarea
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={6}
-                  placeholder={
-                    language === "ro"
-                      ? "Scrie mesajul pe care vrei să îl vadă..."
-                      : "Write the message you want them to see..."
+                  onChange={(e) =>
+                    setMessage(e.target.value)
                   }
-                  className="w-full resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3.5 text-white outline-none transition placeholder:text-zinc-600 focus:border-pink-400"
+                  rows={5}
+                  className="w-full resize-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none transition focus:border-pink-400"
+                  placeholder="Scrie un mesaj..."
                 />
               </div>
 
-              {/* Date + Time */}
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-zinc-300">
-                    Data 🎂
+                  <label className="mb-2 block text-sm text-zinc-400">
+                    Data
                   </label>
 
                   <input
                     type="date"
                     value={birthdayDate}
                     onChange={(e) =>
-                      setBirthdayDate(e.target.value)
+                      setBirthdayDate(
+                        e.target.value
+                      )
                     }
                     required
-                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3.5 text-white outline-none focus:border-pink-400"
+                    className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-zinc-300">
-                    Ora sărbătorii ⏰
+                  <label className="mb-2 block text-sm text-zinc-400">
+                    Ora
                   </label>
 
                   <input
                     type="time"
                     value={birthdayTime}
                     onChange={(e) =>
-                      setBirthdayTime(e.target.value)
+                      setBirthdayTime(
+                        e.target.value
+                      )
                     }
                     required
-                    className="w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3.5 text-white outline-none focus:border-pink-400"
+                    className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
                   />
                 </div>
               </div>
 
-              {/* Timezone */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">
-                  Fus orar
+                <label className="mb-2 block text-sm text-zinc-400">
+                  Timezone
                 </label>
 
                 <select
                   value={timezone}
                   onChange={(e) =>
-                    setTimezone(e.target.value)
-                  }
-                  className="w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-white outline-none focus:border-pink-400"
-                >
-                  <option value="Europe/Bucharest">
-                    Europe/Bucharest 🇷🇴
-                  </option>
-                  <option value="Europe/London">
-                    Europe/London 🇬🇧
-                  </option>
-                  <option value="Europe/Paris">
-                    Europe/Paris 🇫🇷
-                  </option>
-                  <option value="Europe/Berlin">
-                    Europe/Berlin 🇩🇪
-                  </option>
-                  <option value="America/New_York">
-                    America/New_York 🇺🇸
-                  </option>
-                  <option value="America/Los_Angeles">
-                    America/Los_Angeles 🇺🇸
-                  </option>
-                </select>
-              </div>
-
-              {/* Language */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-zinc-300">
-                  Limbă
-                </label>
-
-                <select
-                  value={language}
-                  onChange={(e) =>
-                    setLanguage(
-                      e.target.value === "en" ? "en" : "ro"
+                    setTimezone(
+                      e.target.value
                     )
                   }
-                  className="w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-white outline-none focus:border-pink-400"
+                  className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-pink-400"
                 >
-                  <option value="ro">
-                    Română 🇷🇴
+                  <option value="Europe/Bucharest">
+                    Europe/Bucharest
                   </option>
 
-                  <option value="en">
-                    English 🇬🇧
+                  <option value="Europe/London">
+                    Europe/London
+                  </option>
+
+                  <option value="Europe/Paris">
+                    Europe/Paris
+                  </option>
+
+                  <option value="Europe/Berlin">
+                    Europe/Berlin
+                  </option>
+
+                  <option value="America/New_York">
+                    America/New_York
+                  </option>
+
+                  <option value="America/Los_Angeles">
+                    America/Los_Angeles
                   </option>
                 </select>
               </div>
             </div>
           </section>
 
-          {/* Appearance */}
-          <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl sm:p-7">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold">
-                Appearance ✨
-              </h2>
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-xl font-semibold">
+              Appearance
+            </h2>
 
-              <p className="mt-1 text-sm text-zinc-500">
-                Alege cum va arăta experiența de birthday.
-              </p>
-            </div>
-
-            {/* Theme */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-300">
-                Theme
+            <div className="mt-5">
+              <label className="mb-2 block text-sm text-zinc-400">
+                Temă
               </label>
 
               <select
                 value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3.5 text-white outline-none focus:border-pink-400"
+                onChange={(e) =>
+                  setTheme(
+                    e.target.value
+                  )
+                }
+                className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white outline-none focus:border-pink-400"
               >
                 <option value="default">
                   Default
@@ -494,62 +596,153 @@ function ConfigurePageContent() {
                 </option>
 
                 <option value="minimal">
-                  Minimal 🤍
+                  Minimal
                 </option>
 
-                <option value="pink-dream">
-                  Pink Dream 🎀
+                <option value="sophi">
+                  Sophi 💗
+                </option>
+
+                <option value="midnight">
+                  Midnight 🌙
+                </option>
+
+                <option value="sakura">
+                  Sakura 🌸
+                </option>
+
+                <option value="ocean">
+                  Ocean 🌊
+                </option>
+
+                <option value="sunset">
+                  Sunset 🌅
+                </option>
+
+                <option value="elegant">
+                  Elegant ✨
                 </option>
               </select>
-
-              <p className="mt-2 text-xs text-zinc-600">
-                Temele vor controla aspectul paginii de birthday.
-              </p>
             </div>
 
-            {/* Confetti */}
-            <div className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div>
-                <p className="font-medium">
-                  Confetti 🎉
-                </p>
-
-                <p className="mt-1 text-sm text-zinc-500">
-                  Arată confetti când începe ziua de naștere.
-                </p>
-              </div>
-
+            <label className="mt-5 flex cursor-pointer items-center gap-3">
               <input
                 type="checkbox"
                 checked={enableConfetti}
                 onChange={(e) =>
-                  setEnableConfetti(e.target.checked)
+                  setEnableConfetti(
+                    e.target.checked
+                  )
                 }
-                className="h-5 w-5 shrink-0 accent-pink-500"
+                className="h-4 w-4 accent-pink-500"
               />
+
+              <span className="text-sm text-zinc-300">
+                Activează confetti 🎉
+              </span>
+            </label>
+          </section>
+
+          {/* MESSAGE VISIBILITY */}
+          <section className="rounded-2xl border border-pink-300/20 bg-pink-500/5 p-6">
+            <div>
+              <h2 className="text-xl font-semibold">
+                💌 Mesajul personal
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                Controlează când apare mesajul
+                personalizat pe pagina de
+                birthday.
+              </p>
+            </div>
+
+            <label className="mt-5 flex cursor-pointer items-center justify-between gap-5 rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div>
+                <p className="font-medium text-white">
+                  Arată mesajul doar de ziua ei
+                </p>
+
+                <p className="mt-1 text-sm leading-5 text-zinc-500">
+                  Mesajul va rămâne ascuns în
+                  timpul countdown-ului și va
+                  apărea automat când ajunge
+                  ziua de naștere.
+                </p>
+              </div>
+
+              <div className="relative shrink-0">
+                <input
+                  type="checkbox"
+                  checked={
+                    showMessageOnBirthdayOnly
+                  }
+                  onChange={(e) =>
+                    setShowMessageOnBirthdayOnly(
+                      e.target.checked
+                    )
+                  }
+                  className="peer sr-only"
+                />
+
+                <div className="h-7 w-12 rounded-full bg-zinc-700 transition peer-checked:bg-pink-500" />
+
+                <div className="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+              </div>
+            </label>
+          </section>
+
+          <section className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <h2 className="text-xl font-semibold">
+              Limbă
+            </h2>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setLanguage("ro")
+                }
+                className={`rounded-xl border px-4 py-3 transition ${
+                  language === "ro"
+                    ? "border-pink-500 bg-pink-500/10 text-pink-300"
+                    : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20"
+                }`}
+              >
+                🇷🇴 Română
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setLanguage("en")
+                }
+                className={`rounded-xl border px-4 py-3 transition ${
+                  language === "en"
+                    ? "border-pink-500 bg-pink-500/10 text-pink-300"
+                    : "border-white/10 bg-black/20 text-zinc-400 hover:border-white/20"
+                }`}
+              >
+                🇬🇧 English
+              </button>
             </div>
           </section>
 
-          {/* Save */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => router.push("/admin/dashboard")}
-              className="order-2 w-full rounded-2xl border border-white/10 px-6 py-4 font-semibold text-zinc-300 transition hover:bg-white/10 sm:order-1"
-            >
-              Anulează
-            </button>
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+              {error}
+            </div>
+          )}
 
+          <div className="flex justify-end">
             <button
               type="submit"
               disabled={saving}
-              className="order-1 w-full rounded-2xl bg-pink-500 px-6 py-4 font-semibold text-white shadow-lg shadow-pink-500/20 transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50 sm:order-2"
+              className="rounded-xl bg-pink-500 px-6 py-3 font-semibold text-white transition hover:bg-pink-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving
                 ? "Se salvează..."
-                : isEditing
-                  ? "Salvează modificările 💗"
-                  : "Creează birthday 🎂"}
+                : "Salvează modificările 💗"}
             </button>
           </div>
         </form>

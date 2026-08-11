@@ -24,12 +24,47 @@ type Theme = {
 
 const themes: Record<string, Theme> = {
   default: {
-    page:
-      "bg-gradient-to-br from-zinc-950 via-zinc-900 to-black",
+    page: "bg-gradient-to-br from-zinc-950 via-zinc-900 to-black",
     card: "bg-white/5 border-white/10",
     text: "text-white",
     muted: "text-zinc-400",
     accent: "text-white",
+  },
+
+  colorful: {
+    page: "bg-gradient-to-br from-pink-500 via-purple-600 to-blue-600",
+    card: "bg-white/15 border-white/20",
+    text: "text-white",
+    muted: "text-white/75",
+    accent: "text-yellow-200",
+  },
+
+  neon: {
+    page: "bg-gradient-to-br from-black via-purple-950 to-black",
+    card:
+      "bg-purple-500/10 border-purple-400/30 shadow-lg shadow-purple-500/20",
+    text: "text-white",
+    muted: "text-purple-200/70",
+    accent: "text-cyan-300",
+  },
+
+  galaxy: {
+    page:
+      "bg-gradient-to-br from-slate-950 via-indigo-950 to-black",
+    card:
+      "bg-indigo-500/10 border-indigo-300/20 shadow-lg shadow-indigo-900/30",
+    text: "text-white",
+    muted: "text-indigo-200/70",
+    accent: "text-indigo-200",
+  },
+
+  minimal: {
+    page:
+      "bg-gradient-to-br from-white via-zinc-50 to-zinc-200",
+    card: "bg-black/5 border-black/10",
+    text: "text-zinc-900",
+    muted: "text-zinc-500",
+    accent: "text-zinc-900",
   },
 
   sophi: {
@@ -42,14 +77,14 @@ const themes: Record<string, Theme> = {
     accent: "text-rose-400",
   },
 
-  romantic: {
+  midnight: {
     page:
-      "bg-gradient-to-br from-rose-100 via-pink-50 to-fuchsia-100",
+      "bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950",
     card:
-      "bg-white/70 border-rose-200/70 shadow-xl shadow-rose-200/30",
-    text: "text-rose-950",
-    muted: "text-rose-700/60",
-    accent: "text-rose-500",
+      "bg-white/5 border-indigo-300/20 shadow-xl shadow-indigo-950/40",
+    text: "text-white",
+    muted: "text-indigo-200/70",
+    accent: "text-indigo-200",
   },
 
   sakura: {
@@ -101,19 +136,16 @@ function getTimezoneParts(
   date: Date,
   timezone: string
 ) {
-  const formatter = new Intl.DateTimeFormat(
-    "en-US",
-    {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hourCycle: "h23",
-    }
-  );
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  });
 
   const parts = formatter.formatToParts(date);
 
@@ -139,10 +171,7 @@ function getTimezoneOffset(
   date: Date,
   timezone: string
 ) {
-  const parts = getTimezoneParts(
-    date,
-    timezone
-  );
+  const parts = getTimezoneParts(date, timezone);
 
   const utc = Date.UTC(
     parts.year,
@@ -156,19 +185,50 @@ function getTimezoneOffset(
   return utc - date.getTime();
 }
 
+function getBirthdayDateParts(
+  birthdayDate: string
+) {
+  const [, month, day] = birthdayDate
+    .split("-")
+    .map(Number);
+
+  return {
+    month,
+    day,
+  };
+}
+
+function isBirthdayToday(
+  birthdayDate: string,
+  timezone: string
+) {
+  const now = new Date();
+
+  const current = getTimezoneParts(
+    now,
+    timezone
+  );
+
+  const birthday = getBirthdayDateParts(
+    birthdayDate
+  );
+
+  return (
+    current.month === birthday.month &&
+    current.day === birthday.day
+  );
+}
+
 function getNextBirthday(
   birthdayDate: string,
   birthdayTime: string,
   timezone: string
 ) {
-  const [month, day] = birthdayDate
-    .split("-")
-    .slice(1)
-    .map(Number);
+  const { month, day } =
+    getBirthdayDateParts(birthdayDate);
 
-  const [hour, minute] = birthdayTime
-    .split(":")
-    .map(Number);
+  const [hour, minute] =
+    birthdayTime.split(":").map(Number);
 
   const now = new Date();
 
@@ -189,9 +249,7 @@ function getNextBirthday(
       0
     );
 
-    const candidateDate = new Date(
-      candidate
-    );
+    const candidateDate = new Date(candidate);
 
     return (
       candidate -
@@ -225,7 +283,9 @@ function getCountdown(
   );
 
   return {
-    days: Math.floor(seconds / 86400),
+    days: Math.floor(
+      seconds / 86400
+    ),
     hours: Math.floor(
       (seconds % 86400) / 3600
     ),
@@ -238,7 +298,7 @@ function getCountdown(
 
 function Confetti() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <>
       {Array.from({ length: 80 }).map(
         (_, index) => (
           <span
@@ -247,26 +307,23 @@ function Confetti() {
             style={{
               left: `${(index * 37) % 100}%`,
               top: `${(index * 17) % 90}%`,
-              background: `hsl(${
-                (index * 47) % 360
-              }, 90%, 60%)`,
-              animationDelay: `${
-                (index % 10) * 0.15
-              }s`,
-              animationDuration: `${
-                1 + (index % 4) * 0.5
-              }s`,
+              background:
+                `hsl(${(index * 47) % 360}, 90%, 60%)`,
+              animationDelay:
+                `${(index % 10) * 0.15}s`,
+              animationDuration:
+                `${1 + (index % 4) * 0.5}s`,
             }}
           />
         )
       )}
-    </div>
+    </>
   );
 }
 
 function GalaxyBackground() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <>
       {Array.from({ length: 100 }).map(
         (_, index) => (
           <span
@@ -275,14 +332,13 @@ function GalaxyBackground() {
             style={{
               left: `${(index * 41) % 100}%`,
               top: `${(index * 67) % 100}%`,
-              animationDelay: `${
-                (index % 8) * 0.3
-              }s`,
+              animationDelay:
+                `${(index % 8) * 0.3}s`,
             }}
           />
         )
       )}
-    </div>
+    </>
   );
 }
 
@@ -298,27 +354,25 @@ function NeonBackground() {
 
 function SophiBackground() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-pink-200/30 blur-3xl" />
+    <>
+      <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full bg-pink-200/30 blur-3xl" />
 
-      <div className="absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-rose-200/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-rose-200/30 blur-3xl" />
 
-      <div className="absolute right-1/4 top-1/4 h-64 w-64 rounded-full bg-sky-100/30 blur-3xl" />
+      <div className="pointer-events-none absolute right-1/4 top-1/4 h-64 w-64 rounded-full bg-sky-100/30 blur-3xl" />
 
       {Array.from({ length: 18 }).map(
         (_, index) => (
           <span
             key={`sparkle-${index}`}
-            className="absolute animate-pulse text-xs text-pink-300/60"
+            className="pointer-events-none absolute animate-pulse text-xs text-pink-300/60"
             style={{
               left: `${8 + ((index * 43) % 84)}%`,
               top: `${5 + ((index * 61) % 88)}%`,
-              animationDelay: `${
-                (index % 6) * 0.5
-              }s`,
-              animationDuration: `${
-                2.5 + (index % 4)
-              }s`,
+              animationDelay:
+                `${(index % 6) * 0.5}s`,
+              animationDuration:
+                `${2.5 + (index % 4)}s`,
             }}
           >
             ✦
@@ -330,16 +384,14 @@ function SophiBackground() {
         (_, index) => (
           <span
             key={`heart-${index}`}
-            className="absolute animate-pulse text-sm text-pink-300/35"
+            className="pointer-events-none absolute animate-pulse text-sm text-pink-300/35"
             style={{
               left: `${5 + ((index * 53) % 90)}%`,
               top: `${10 + ((index * 47) % 82)}%`,
-              animationDelay: `${
-                (index % 5) * 0.7
-              }s`,
-              animationDuration: `${
-                3 + (index % 3)
-              }s`,
+              animationDelay:
+                `${(index % 5) * 0.7}s`,
+              animationDuration:
+                `${3 + (index % 3)}s`,
             }}
           >
             ♡
@@ -351,20 +403,19 @@ function SophiBackground() {
         (_, index) => (
           <span
             key={`petal-${index}`}
-            className="absolute text-sm text-rose-300/30"
+            className="pointer-events-none absolute text-sm text-rose-300/30"
             style={{
               left: `${10 + ((index * 67) % 80)}%`,
               top: `${15 + ((index * 37) % 75)}%`,
-              transform: `rotate(${
-                index * 35
-              }deg)`,
+              transform:
+                `rotate(${index * 35}deg)`,
             }}
           >
             ❀
           </span>
         )
       )}
-    </div>
+    </>
   );
 }
 
@@ -372,12 +423,12 @@ function CountdownBox({
   value,
   label,
   theme,
-  isSophi,
+  sophi,
 }: {
   value: number;
   label: string;
   theme: Theme;
-  isSophi: boolean;
+  sophi: boolean;
 }) {
   return (
     <div
@@ -387,7 +438,7 @@ function CountdownBox({
         sm:p-6
         ${theme.card}
         ${
-          isSophi
+          sophi
             ? "transition duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-pink-200/30"
             : ""
         }
@@ -395,23 +446,22 @@ function CountdownBox({
     >
       <div
         className={`
-          text-4xl font-black
-          sm:text-6xl
+          text-4xl font-black sm:text-6xl
           ${theme.accent}
         `}
       >
         {String(value).padStart(2, "0")}
-      </div>
 
-      <div
-        className={`
-          mt-2 text-[10px]
-          uppercase tracking-[0.2em]
-          sm:text-xs
-          ${theme.muted}
-        `}
-      >
-        {label}
+        <div
+          className={`
+            mt-2 text-[10px] uppercase
+            tracking-[0.2em]
+            sm:text-xs
+            ${theme.muted}
+          `}
+        >
+          {label}
+        </div>
       </div>
     </div>
   );
@@ -420,7 +470,9 @@ function CountdownBox({
 export default function BirthdayExperience({
   birthday,
 }: Props) {
-  const theme = getTheme(birthday.theme);
+  const theme = getTheme(
+    birthday.theme
+  );
 
   const isRomanian =
     birthday.language === "ro";
@@ -455,10 +507,23 @@ export default function BirthdayExperience({
 
   useEffect(() => {
     const update = () => {
-      const remaining =
-        target - Date.now();
+      const birthdayToday = isBirthdayToday(
+        birthday.birthday_date,
+        birthday.timezone
+      );
 
-      if (remaining <= 0) {
+      /*
+       * IMPORTANT:
+       *
+       * Birthday mode is now based on the
+       * actual calendar date, NOT the exact
+       * birthday time.
+       *
+       * This means that once the clock reaches
+       * 00:00 on her birthday, the birthday
+       * experience appears and stays all day.
+       */
+      if (birthdayToday) {
         setCelebrating(true);
         return;
       }
@@ -479,31 +544,57 @@ export default function BirthdayExperience({
 
     return () =>
       clearInterval(interval);
-  }, [target]);
+  }, [
+    target,
+    birthday.birthday_date,
+    birthday.timezone,
+  ]);
+
+  /*
+   * MESSAGE VISIBILITY
+   *
+   * OFF:
+   *   Message is always visible.
+   *
+   * ON:
+   *   Message is only visible on the
+   *   birthday date.
+   */
+  const showMessage =
+    !birthday.show_message_on_birthday_only ||
+    celebrating;
 
   /*
    * BIRTHDAY DAY
    */
-
   if (celebrating) {
     return (
       <main
         className={`
           relative flex min-h-screen
           items-center justify-center
-          overflow-hidden px-5 py-10
-          sm:p-6
+          overflow-hidden p-6
           ${theme.page}
           ${theme.text}
         `}
       >
-        {isSophi && <SophiBackground />}
+        {isSophi && (
+          <SophiBackground />
+        )}
+
+        {birthday.theme === "galaxy" && (
+          <GalaxyBackground />
+        )}
+
+        {birthday.theme === "neon" && (
+          <NeonBackground />
+        )}
+
+        {birthday.enable_confetti && (
+          <Confetti />
+        )}
 
         <div className="relative z-10 w-full max-w-4xl text-center">
-          {birthday.enable_confetti && (
-            <Confetti />
-          )}
-
           {isSophi ? (
             <>
               <div className="text-7xl sm:text-8xl">
@@ -551,35 +642,44 @@ export default function BirthdayExperience({
                   {birthday.title}
                 </p>
               )}
+              <div className="fixed bottom-4 left-4 z-[9999] rounded-xl bg-black p-4 text-xs text-white">
+  show_message_on_birthday_only:{" "}
+  {String(birthday.show_message_on_birthday_only)}
+  <br />
+  celebrating: {String(celebrating)}
+  <br />
+  showMessage: {String(showMessage)}
+</div>
 
-              {birthday.message && (
-                <div
-                  className="
-                    mx-auto mt-8 max-w-2xl
-                    rounded-3xl border
-                    border-pink-200/70
-                    bg-white/75 p-7
-                    text-left shadow-xl
-                    shadow-pink-200/20
-                    backdrop-blur-xl
-                    sm:p-9
-                  "
-                >
-                  <p
+              {showMessage &&
+                birthday.message && (
+                  <div
                     className="
-                      text-lg leading-8
-                      text-zinc-600
-                      sm:text-xl
+                      mx-auto mt-8 max-w-2xl
+                      rounded-3xl border
+                      border-pink-200/70
+                      bg-white/75 p-7
+                      text-left shadow-xl
+                      shadow-pink-200/20
+                      backdrop-blur-xl
+                      sm:p-9
                     "
                   >
-                    {birthday.message}
-                  </p>
+                    <p
+                      className="
+                        text-lg leading-8
+                        text-zinc-600
+                        sm:text-xl
+                      "
+                    >
+                      {birthday.message}
+                    </p>
 
-                  <div className="mt-6 text-right text-pink-300">
-                    ♡
+                    <div className="mt-6 text-right text-pink-300">
+                      ♡
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               <div className="mt-10 text-xl text-pink-300">
                 ✦ ♡ ✦
@@ -630,17 +730,18 @@ export default function BirthdayExperience({
                 </p>
               )}
 
-              {birthday.message && (
-                <p
-                  className={`
-                    mx-auto mt-6 max-w-2xl
-                    text-lg leading-8
-                    ${theme.muted}
-                  `}
-                >
-                  {birthday.message}
-                </p>
-              )}
+              {showMessage &&
+                birthday.message && (
+                  <p
+                    className={`
+                      mx-auto mt-6 max-w-2xl
+                      text-lg leading-8
+                      ${theme.muted}
+                    `}
+                  >
+                    {birthday.message}
+                  </p>
+                )}
 
               <div className="mt-10 text-4xl">
                 🎂 🎈 🎁 🥳 🎉
@@ -655,7 +756,6 @@ export default function BirthdayExperience({
   /*
    * COUNTDOWN
    */
-
   return (
     <main
       className={`
@@ -667,7 +767,9 @@ export default function BirthdayExperience({
         ${theme.text}
       `}
     >
-      {isSophi && <SophiBackground />}
+      {isSophi && (
+        <SophiBackground />
+      )}
 
       {birthday.theme === "galaxy" && (
         <GalaxyBackground />
@@ -694,9 +796,10 @@ export default function BirthdayExperience({
                 items-center justify-center
                 rounded-full border
                 border-pink-200/70
-                bg-white/75 text-7xl
+                bg-white/75
+                text-7xl
                 shadow-xl
-                shadow-pink-200/30
+                shadow-pink-200/20
                 backdrop-blur-xl
               "
             >
@@ -748,77 +851,6 @@ export default function BirthdayExperience({
                 {birthday.title}
               </p>
             )}
-
-            <div
-              className="
-                mt-10 grid grid-cols-2
-                gap-3 sm:mt-12
-                sm:grid-cols-4 sm:gap-4
-              "
-            >
-              <CountdownBox
-                value={countdown.days}
-                label="Zile"
-                theme={theme}
-                isSophi
-              />
-
-              <CountdownBox
-                value={countdown.hours}
-                label="Ore"
-                theme={theme}
-                isSophi
-              />
-
-              <CountdownBox
-                value={countdown.minutes}
-                label="Minute"
-                theme={theme}
-                isSophi
-              />
-
-              <CountdownBox
-                value={countdown.seconds}
-                label="Secunde"
-                theme={theme}
-                isSophi
-              />
-            </div>
-
-            {birthday.message && (
-              <div
-                className="
-                  mx-auto mt-8 max-w-2xl
-                  rounded-3xl border
-                  border-pink-200/70
-                  bg-white/75 p-6
-                  text-left shadow-xl
-                  shadow-pink-200/20
-                  backdrop-blur-xl
-                  sm:mt-10 sm:p-8
-                "
-              >
-                <div className="mb-4 text-sm font-medium text-pink-400">
-                  💌 Un mesaj pentru tine
-                </div>
-
-                <p
-                  className="
-                    text-base leading-7
-                    text-zinc-600
-                    sm:text-lg sm:leading-8
-                  "
-                >
-                  {birthday.message}
-                </p>
-              </div>
-            )}
-
-            <div className="mt-8 text-center">
-              <span className="text-xs text-zinc-400">
-                ✦ făcut cu drag ♡ ✦
-              </span>
-            </div>
           </>
         ) : (
           <>
@@ -880,77 +912,107 @@ export default function BirthdayExperience({
                 {birthday.title}
               </p>
             )}
+          </>
+        )}
 
-            <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <CountdownBox
-                value={countdown.days}
-                label={
-                  isRomanian
-                    ? "Zile"
-                    : "Days"
-                }
-                theme={theme}
-                isSophi={false}
-              />
+        <div
+          className="
+            mt-10 grid grid-cols-2
+            gap-3 sm:mt-12
+            sm:grid-cols-4 sm:gap-4
+          "
+        >
+          <CountdownBox
+            value={countdown.days}
+            label={
+              isRomanian
+                ? "Zile"
+                : "Days"
+            }
+            theme={theme}
+            sophi={isSophi}
+          />
 
-              <CountdownBox
-                value={countdown.hours}
-                label={
-                  isRomanian
-                    ? "Ore"
-                    : "Hours"
-                }
-                theme={theme}
-                isSophi={false}
-              />
+          <CountdownBox
+            value={countdown.hours}
+            label={
+              isRomanian
+                ? "Ore"
+                : "Hours"
+            }
+            theme={theme}
+            sophi={isSophi}
+          />
 
-              <CountdownBox
-                value={countdown.minutes}
-                label={
-                  isRomanian
-                    ? "Minute"
-                    : "Minutes"
-                }
-                theme={theme}
-                isSophi={false}
-              />
+          <CountdownBox
+            value={countdown.minutes}
+            label={
+              isRomanian
+                ? "Minute"
+                : "Minutes"
+            }
+            theme={theme}
+            sophi={isSophi}
+          />
 
-              <CountdownBox
-                value={countdown.seconds}
-                label={
-                  isRomanian
-                    ? "Secunde"
-                    : "Seconds"
-                }
-                theme={theme}
-                isSophi={false}
-              />
-            </div>
+          <CountdownBox
+            value={countdown.seconds}
+            label={
+              isRomanian
+                ? "Secunde"
+                : "Seconds"
+            }
+            theme={theme}
+            sophi={isSophi}
+          />
+        </div>
 
-            {birthday.message && (
+        {showMessage &&
+          birthday.message && (
+            <div
+              className="
+                mx-auto mt-8 max-w-2xl
+                rounded-3xl border
+                border-pink-200/70
+                bg-white/75 p-6
+                shadow-xl
+                shadow-pink-200/20
+                backdrop-blur-xl
+                sm:mt-10 sm:p-8
+              "
+            >
+              <div className="mb-4 text-sm font-medium text-pink-400">
+                💌 Un mesaj pentru tine
+              </div>
+
               <p
-                className={`
-                  mx-auto mt-10 max-w-2xl
-                  text-lg leading-8
-                  ${theme.muted}
-                `}
+                className="
+                  text-base leading-7
+                  text-zinc-600
+                  sm:text-lg sm:leading-8
+                "
               >
                 {birthday.message}
               </p>
-            )}
+            </div>
+          )}
 
-            <p
-              className={`
-                mt-8 text-center text-sm opacity-60
-                ${theme.muted}
-              `}
-            >
-              {birthday.birthday_date} ·{" "}
-              {birthday.birthday_time} ·{" "}
-              {birthday.timezone}
-            </p>
-          </>
-        )}
+        <div className="mt-8 text-center">
+          <span
+            className={`
+              text-xs
+              ${
+                isSophi
+                  ? "text-pink-300"
+                  : theme.muted
+              }
+            `}
+          >
+            {isSophi
+              ? "✦ făcut cu drag ♡ ✦"
+              : `${birthday.birthday_date} · ${birthday.birthday_time} · ${birthday.timezone}`}
+          </span>
+        </div>
       </div>
     </main>
   );

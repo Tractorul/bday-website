@@ -85,7 +85,9 @@ export async function PUT(
     "language",
     "theme",
     "enable_confetti",
+    "enable_music",
     "is_primary",
+    "show_message_on_birthday_only",
   ];
 
   for (const field of allowedFields) {
@@ -101,6 +103,20 @@ export async function PUT(
   ) {
     return NextResponse.json(
       { error: "Name is required." },
+      { status: 400 }
+    );
+  }
+
+  if (
+    "show_message_on_birthday_only" in update &&
+    typeof update.show_message_on_birthday_only !==
+      "boolean"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "show_message_on_birthday_only must be a boolean.",
+      },
       { status: 400 }
     );
   }
