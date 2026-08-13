@@ -2,6 +2,7 @@ import type { Birthday } from "@/types/birthday";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import HomeBirthday from "@/components/birthday/HomeBirthday";
+import { Analytics } from "@vercel/analytics/next"
 
 export default async function Home() {
   const supabase = await createClient();
