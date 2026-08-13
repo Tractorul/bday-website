@@ -982,7 +982,7 @@ export default function BirthdayExperience({
               "
             >
               <div className="mb-4 text-sm font-medium text-pink-400">
-                💌 Un mesaj pentru tine
+                 Un mesaj pentru tine
               </div>
 
               <p
