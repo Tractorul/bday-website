@@ -1,0 +1,374 @@
+{
+  "communities": {
+    "0": [
+      "app_admin_appearance_page",
+      "app_admin_appearance_page_appearancepage",
+      "app_admin_birthday_page",
+      "app_admin_birthday_page_birthdaypage",
+      "app_admin_login_page",
+      "app_admin_login_page_loginpage",
+      "app_admin_logout_route",
+      "app_admin_logout_route_post",
+      "app_api_admin_birthdays_slug_route_get",
+      "app_birthday_slug_page",
+      "app_birthday_slug_page_page",
+      "app_birthday_slug_page_pageprops",
+      "components_admin_appearanceform",
+      "components_admin_appearanceform_appearanceform",
+      "components_admin_appearanceform_themes",
+      "components_admin_birthdayform",
+      "components_admin_birthdayform_birthdayform",
+      "lib_supabase_client",
+      "lib_supabase_client_createclient",
+      "lib_supabase_server_createclient"
+    ],
+    "1": [
+      "components_birthday_birthdayexperience",
+      "components_birthday_birthdayexperience_birthdayexperience",
+      "components_birthday_birthdayexperience_confetti",
+      "components_birthday_birthdayexperience_countdown",
+      "components_birthday_birthdayexperience_countdownbox",
+      "components_birthday_birthdayexperience_galaxybackground",
+      "components_birthday_birthdayexperience_getbirthdaydateparts",
+      "components_birthday_birthdayexperience_getcountdown",
+      "components_birthday_birthdayexperience_getnextbirthday",
+      "components_birthday_birthdayexperience_gettheme",
+      "components_birthday_birthdayexperience_gettimezoneoffset",
+      "components_birthday_birthdayexperience_gettimezoneparts",
+      "components_birthday_birthdayexperience_isbirthdaytoday",
+      "components_birthday_birthdayexperience_neonbackground",
+      "components_birthday_birthdayexperience_props",
+      "components_birthday_birthdayexperience_rationale_516",
+      "components_birthday_birthdayexperience_sophibackground",
+      "components_birthday_birthdayexperience_theme",
+      "components_birthday_birthdayexperience_themes"
+    ],
+    "2": [
+      "date_fns",
+      "date_fns_tz",
+      "framer_motion",
+      "next",
+      "package_dependencies",
+      "package_dependencies_date_fns",
+      "package_dependencies_date_fns_tz",
+      "package_dependencies_framer_motion",
+      "package_dependencies_next",
+      "package_dependencies_react",
+      "package_dependencies_react_dom",
+      "package_dependencies_supabase_ssr",
+      "package_dependencies_supabase_supabase_js",
+      "package_dependencies_vercel_analytics",
+      "react",
+      "react_dom",
+      "supabase_ssr",
+      "supabase_supabase_js",
+      "vercel_analytics"
+    ],
+    "3": [
+      "ref_dom",
+      "ref_dom_iterable",
+      "ref_esnext",
+      "tsconfig_compileroptions",
+      "tsconfig_compileroptions_allowjs",
+      "tsconfig_compileroptions_esmoduleinterop",
+      "tsconfig_compileroptions_incremental",
+      "tsconfig_compileroptions_isolatedmodules",
+      "tsconfig_compileroptions_jsx",
+      "tsconfig_compileroptions_lib",
+      "tsconfig_compileroptions_module",
+      "tsconfig_compileroptions_moduleresolution",
+      "tsconfig_compileroptions_noemit",
+      "tsconfig_compileroptions_paths",
+      "tsconfig_compileroptions_plugins",
+      "tsconfig_compileroptions_resolvejsonmodule",
+      "tsconfig_compileroptions_skiplibcheck",
+      "tsconfig_compileroptions_strict",
+      "tsconfig_compileroptions_target"
+    ],
+    "4": [
+      "app_admin_configure_page",
+      "app_admin_configure_page_configurepage",
+      "app_admin_configure_page_configurepagecontent",
+      "app_page",
+      "app_page_home",
+      "components_birthday_homebirthday",
+      "components_birthday_homebirthday_countdownbox",
+      "components_birthday_homebirthday_countdownvalues",
+      "components_birthday_homebirthday_getbirthdaytimestamp",
+      "components_birthday_homebirthday_getcountdown",
+      "components_birthday_homebirthday_getcurrentbirthday",
+      "components_birthday_homebirthday_getnextbirthday",
+      "components_birthday_homebirthday_gettimezoneoffset",
+      "components_birthday_homebirthday_gettimezoneparts",
+      "components_birthday_homebirthday_homebirthday",
+      "components_birthday_homebirthday_props",
+      "types_birthday",
+      "types_birthday_birthday"
+    ],
+    "5": [
+      "eslint",
+      "eslint_config_next",
+      "package_devdependencies",
+      "package_devdependencies_eslint",
+      "package_devdependencies_eslint_config_next",
+      "package_devdependencies_tailwindcss",
+      "package_devdependencies_tailwindcss_postcss",
+      "package_devdependencies_types_node",
+      "package_devdependencies_types_react",
+      "package_devdependencies_types_react_dom",
+      "package_devdependencies_typescript",
+      "tailwindcss",
+      "tailwindcss_postcss",
+      "types_node",
+      "types_react",
+      "types_react_dom",
+      "typescript"
+    ],
+    "6": [
+      "app_admin_dashboard_page",
+      "app_admin_dashboard_page_admindashboard",
+      "app_api_admin_birthdays_delete_route",
+      "app_api_admin_birthdays_delete_route_post",
+      "app_api_admin_birthdays_route",
+      "app_api_admin_birthdays_route_delete",
+      "app_api_admin_birthdays_route_get",
+      "app_api_admin_birthdays_route_post",
+      "app_api_admin_birthdays_slug_route",
+      "app_api_admin_birthdays_slug_route_delete",
+      "app_api_admin_birthdays_slug_route_put",
+      "app_api_admin_birthdays_slug_route_routecontext",
+      "lib_supabase_server",
+      "lib_supabase_server_createadminclient",
+      "lib_supabase_server_requireadmin",
+      "supabase_js"
+    ],
+    "7": [
+      "ref_mts",
+      "ref_next_dev_types_ts",
+      "ref_next_env_d_ts",
+      "ref_next_types_ts",
+      "ref_node_modules",
+      "ref_ts",
+      "ref_tsx",
+      "tsconfig",
+      "tsconfig_exclude",
+      "tsconfig_include"
+    ],
+    "8": [
+      "components_birthday_countdown",
+      "components_birthday_countdown_countdown",
+      "components_birthday_countdown_countdownbox",
+      "components_birthday_countdown_countdownvalues",
+      "components_birthday_countdown_getcountdown",
+      "components_birthday_countdown_getnextbirthdaytimestamp",
+      "components_birthday_countdown_gettimezoneoffset",
+      "components_birthday_countdown_gettimezoneparts",
+      "components_birthday_countdown_props"
+    ],
+    "9": [
+      "package",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_scripts_lint",
+      "package_scripts_start",
+      "package_version"
+    ],
+    "10": [
+      "components_admin_birthdaylist",
+      "components_admin_birthdaylist_birthdaylist",
+      "components_admin_birthdaylist_props",
+      "components_admin_deletebirthdaybutton",
+      "components_admin_deletebirthdaybutton_deletebirthdaybutton",
+      "components_admin_deletebirthdaybutton_props"
+    ],
+    "11": [
+      "app_layout",
+      "app_layout_geistmono",
+      "app_layout_geistsans",
+      "app_layout_metadata",
+      "app_layout_rootlayout"
+    ],
+    "12": [
+      "nextjs",
+      "public_next_svg",
+      "public_vercel_svg",
+      "readme",
+      "vercel"
+    ],
+    "13": [
+      "app_admin_configure_new_page",
+      "app_admin_configure_new_page_newbirthdaypage",
+      "app_admin_configure_new_page_rationale_18"
+    ],
+    "14": [
+      "middleware",
+      "middleware_config",
+      "middleware_middleware"
+    ],
+    "15": [
+      "app_admin_layout",
+      "app_admin_layout_adminlayout"
+    ],
+    "16": [
+      "eslint_config",
+      "eslint_config_eslintconfig"
+    ],
+    "17": [
+      "next_config",
+      "next_config_nextconfig"
+    ],
+    "18": [
+      "postcss_config",
+      "postcss_config_config"
+    ],
+    "19": [
+      "public_file_svg"
+    ],
+    "20": [
+      "public_globe_svg"
+    ],
+    "21": [
+      "public_window_svg"
+    ]
+  },
+  "cohesion": {
+    "0": 0.16842105263157894,
+    "1": 0.16374269005847952,
+    "2": 0.10526315789473684,
+    "3": 0.10526315789473684,
+    "4": 0.20915032679738563,
+    "5": 0.11764705882352941,
+    "6": 0.30833333333333335,
+    "7": 0.2,
+    "8": 0.3611111111111111,
+    "9": 0.2222222222222222,
+    "10": 0.4,
+    "11": 0.4,
+    "12": 0.4,
+    "13": 0.6666666666666666,
+    "14": 0.6666666666666666,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0
+  },
+  "gods": [
+    {
+      "id": "tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 16
+    },
+    {
+      "id": "lib_supabase_server_createclient",
+      "label": "createClient()",
+      "degree": 14
+    },
+    {
+      "id": "lib_supabase_server_requireadmin",
+      "label": "requireAdmin()",
+      "degree": 13
+    },
+    {
+      "id": "lib_supabase_server_createadminclient",
+      "label": "createAdminClient()",
+      "degree": 12
+    },
+    {
+      "id": "lib_supabase_client_createclient",
+      "label": "createClient()",
+      "degree": 7
+    },
+    {
+      "id": "tsconfig_include",
+      "label": "include",
+      "degree": 7
+    },
+    {
+      "id": "components_birthday_birthdayexperience_birthdayexperience",
+      "label": "BirthdayExperience()",
+      "degree": 6
+    },
+    {
+      "id": "types_birthday_birthday",
+      "label": "Birthday",
+      "degree": 6
+    },
+    {
+      "id": "components_birthday_birthdayexperience_getnextbirthday",
+      "label": "getNextBirthday()",
+      "degree": 5
+    },
+    {
+      "id": "components_birthday_homebirthday_getcurrentbirthday",
+      "label": "getCurrentBirthday()",
+      "degree": 5
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Home()",
+      "target": "createClient()",
+      "source_files": [
+        "app/page.tsx",
+        "lib/supabase/server.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; bridges separate communities; peripheral node `Home()` unexpectedly reaches hub `createClient()`"
+    },
+    {
+      "source": "AppearancePage()",
+      "target": "createClient()",
+      "source_files": [
+        "app/admin/appearance/page.tsx",
+        "lib/supabase/server.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `AppearancePage()` unexpectedly reaches hub `createClient()`"
+    },
+    {
+      "source": "BirthdayPage()",
+      "target": "createClient()",
+      "source_files": [
+        "app/admin/birthday/page.tsx",
+        "lib/supabase/server.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `BirthdayPage()` unexpectedly reaches hub `createClient()`"
+    },
+    {
+      "source": "LoginPage()",
+      "target": "createClient()",
+      "source_files": [
+        "app/admin/login/page.tsx",
+        "lib/supabase/client.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `LoginPage()` unexpectedly reaches hub `createClient()`"
+    },
+    {
+      "source": "POST()",
+      "target": "createClient()",
+      "source_files": [
+        "app/admin/logout/route.ts",
+        "lib/supabase/server.ts"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "connects across different repos/directories; peripheral node `POST()` unexpectedly reaches hub `createClient()`"
+    }
+  ],
+  "tokens": {
+    "input": 4570,
+    "output": 899
+  }
+}
